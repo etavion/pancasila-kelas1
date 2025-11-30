@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kuis Pancasila Ceria</title>
+<style>
+  body { font-family: 'Comic Sans MS', Arial, sans-serif; background: linear-gradient(to bottom, #ffefba, #ffffff); padding: 20px; }
+  h1 { text-align: center; color: #ff6f61; }
+  #timer { font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 10px; }
+  #progress-container { width: 100%; background: #ddd; border-radius: 10px; margin-bottom: 20px; height: 20px; }
+  #progress-bar { width: 0%; height: 100%; background: #4caf50; border-radius: 10px; transition: width 0.3s; }
+  .soal { margin-bottom: 20px; background: #fff8dc; padding: 15px; border-radius: 12px; box-shadow: 0 0 8px rgba(0,0,0,0.2); }
+  .jawaban label { display: block; margin: 5px 0; cursor: pointer; padding: 8px; border-radius: 8px; border: 1px solid transparent; transition: 0.2s; font-size: 16px; }
+  .jawaban input[type=radio] { margin-right: 10px; }
+  .jawaban label:hover { background-color: #ffe4b5; }
+  .correct { background-color: #d4edda !important; color: #155724; border-color: #28a745 !important; }
+  .wrong { background-color: #f8d7da !important; color: #721c24; border-color: #dc3545 !important; }
+  .result { font-size: 24px; text-align: center; margin-top: 20px; font-weight: bold; color: #ff4500; }
+  button { display: block; margin: 20px auto; padding: 12px 25px; font-size: 18px; background: #ff6f61; color: white; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 4px #d45a50; }
+  button:active { box-shadow: 0 2px #d45a50; transform: translateY(2px); }
+  @media(max-width:600px){ .jawaban label{font-size:14px; padding:6px;} }
+</style>
+</head>
+<body>
+
+<h1>Kuis Pancasila Ceria</h1>
+<div id="timer">25:00</div>
+<div id="progress-container"><div id="progress-bar"></div></div>
+
+<form id="kuisForm"></form>
+
+<div class="result" id="result"></div>
+<button id="selesaiBtn">Selesai</button>
+
+<script>
+// Soal sama seperti sebelumnya
+const soalData = [
+  {soal:"Apa lambang negara Indonesia?",pilihan:["Merah putih","Garuda Pancasila","Indonesia Raya","Bintang"],jawaban:"Garuda Pancasila"},
+  {soal:"Berapa jumlah sila dalam Pancasila?",pilihan:["3","4","5","6"],jawaban:"5"},
+  {soal:"Bunyi sila pertama Pancasila adalah…",pilihan:["Kemanusiaan yang adil dan beradab","Ketuhanan Yang Maha Esa","Persatuan Indonesia","Keadilan sosial bagi seluruh rakyat Indonesia"],jawaban:"Ketuhanan Yang Maha Esa"},
+  {soal:"Apa warna bendera Indonesia?",pilihan:["Merah dan biru","Merah dan putih","Putih dan hijau","Merah dan kuning"],jawaban:"Merah dan putih"},
+  {soal:"Lagu kebangsaan Indonesia adalah…",pilihan:["Garuda Pancasila","Indonesia Raya","Halo Halo Bandung","Tanah Airku"],jawaban:"Indonesia Raya"},
+  {soal:"Apa arti aturan?",pilihan:["Hal yang boleh dan tidak boleh dilakukan","Makanan yang enak","Lagu yang dinyanyikan","Mainan di rumah"],jawaban:"Hal yang boleh dan tidak boleh dilakukan"},
+  {soal:"Contoh aturan di rumah adalah…",pilihan:["Main sepanjang hari","Membantu membersihkan rumah","Tidak mandi","Tidur siang sepanjang hari"],jawaban:"Membantu membersihkan rumah"},
+  {soal:"Contoh aturan saat makan adalah…",pilihan:["Makan sambil lari","Makan dengan tangan bersih","Tidak cuci tangan","Makan tanpa dicuci piring"],jawaban:"Makan dengan tangan bersih"},
+  {soal:"Bagaimana cara memperkenalkan diri?",pilihan:["Diam saja","Menyebut nama dan asal","Berteriak keras","Mengambil mainan teman"],jawaban:"Menyebut nama dan asal"},
+  {soal:"Keragaman di sekitar kita contohnya adalah…",pilihan:["Semua orang sama warna rambut","Teman-teman memiliki warna kulit dan pakaian berbeda","Semua makan makanan yang sama","Semua tinggal di rumah yang sama"],jawaban:"Teman-teman memiliki warna kulit dan pakaian berbeda"},
+  {soal:"Menghargai keberagaman artinya…",pilihan:["Saling bertengkar","Menerima perbedaan orang lain","Mengambil barang teman","Tidak peduli orang lain"],jawaban:"Menerima perbedaan orang lain"},
+  {soal:"Bagian rumah yang biasanya untuk tidur disebut…",pilihan:["Dapur","Kamar","Halaman","Garasi"],jawaban:"Kamar"},
+  {soal:"Cara menjaga kebersihan rumah adalah…",pilihan:["Buang sampah sembarangan","Membersihkan lantai dan meja","Tidur di luar rumah","Tidak mencuci piring"],jawaban:"Membersihkan lantai dan meja"},
+  {soal:"Lingkungan sekitar harus…",pilihan:["Kotor dan berantakan","Bersih dan rapi","Diabaikan","Dibiarkan binatang buas"],jawaban:"Bersih dan rapi"},
+  {soal:"Tata cara bertetangga yang baik adalah…",pilihan:["Mengganggu tetangga","Menjaga hubungan baik dan saling membantu","Membunyikan musik keras sepanjang malam","Tidak menyapa sama sekali"],jawaban:"Menjaga hubungan baik dan saling membantu"},
+  {soal:"Peran anggota keluarga contohnya…",pilihan:["Ayah bekerja, ibu memasak, anak belajar","Semua tidur saja","Semua bermain terus","Tidak ada yang membantu"],jawaban:"Ayah bekerja, ibu memasak, anak belajar"},
+  {soal:"Gotong royong artinya…",pilihan:["Bekerja sendiri","Bekerja sama dengan orang lain","Tidur bersama teman","Makan bersama"],jawaban:"Bekerja sama dengan orang lain"},
+  {soal:"Contoh macam gotong royong adalah…",pilihan:["Membersihkan halaman bersama","Bermain sendiri","Menonton TV","Tidur siang"],jawaban:"Membersihkan halaman bersama"},
+  {soal:"Manfaat gotong royong adalah…",pilihan:["Pekerjaan selesai lebih cepat dan lingkungan bersih","Hanya membuat capek","Tidak ada manfaat","Membuat gaduh"],jawaban:"Pekerjaan selesai lebih cepat dan lingkungan bersih"},
+  {soal:"Lambang Pancasila di dada Garuda berbentuk…",pilihan:["Lingkaran","Perisai","Bintang","Hati"],jawaban:"Perisai"}
+];
+
+let jawabanUser = JSON.parse(localStorage.getItem("jawabanUser")) || {};
+const form = document.getElementById("kuisForm");
+const progressBar = document.getElementById("progress-bar");
+
+function renderSoal(){
+  form.innerHTML = "";
+  soalData.forEach((s,index)=>{
+    const div = document.createElement("div");
+    div.className = "soal";
+    div.innerHTML = `<strong>${index+1}. ${s.soal}</strong><div class="jawaban"></div>`;
+    const jawabanDiv = div.querySelector(".jawaban");
+    s.pilihan.forEach(pil=>{
+      const checked = jawabanUser[index] === pil ? "checked" : "";
+      const id = `soal${index}_${pil}`;
+      jawabanDiv.innerHTML += `
+        <label for="${id}">
+          <input type="radio" name="soal${index}" id="${id}" value="${pil}" ${checked}> ${pil}
+        </label>
+      `;
+    });
+    form.appendChild(div);
+  });
+
+  form.querySelectorAll("input[type=radio]").forEach(input=>{
+    input.addEventListener("change",(e)=>{
+      const idx = parseInt(e.target.name.replace("soal",""));
+      jawabanUser[idx] = e.target.value;
+      localStorage.setItem("jawabanUser",JSON.stringify(jawabanUser));
+      updateProgress();
+    });
+  });
+  updateProgress();
+}
+
+function updateProgress(){
+  let answered = Object.keys(jawabanUser).length;
+  let percent = (answered/soalData.length)*100;
+  progressBar.style.width = percent+"%";
+}
+
+renderSoal();
+
+// Timer dengan animasi warna
+let timeLeft = 25*60;
+const timerEl = document.getElementById("timer");
+const timer = setInterval(()=>{
+  let minutes = Math.floor(timeLeft/60);
+  let seconds = timeLeft%60;
+  timerEl.textContent = `${minutes.toString().padStart(2,"0")}:${seconds.toString().padStart(2,"0")}`;
+  // ubah warna timer
+  if(timeLeft>600) timerEl.style.color="#4caf50";
+  else if(timeLeft>300) timerEl.style.color="#ffa500";
+  else timerEl.style.color="#ff4500";
+  if(timeLeft<=0){ clearInterval(timer); selesai(); }
+  timeLeft--;
+},1000);
+
+document.getElementById("selesaiBtn").addEventListener("click",selesai);
+
+function selesai(){
+  clearInterval(timer);
+  let score = 0;
+  soalData.forEach((s,index)=>{
+    const div = form.children[index];
+    const pilihanEls = div.querySelectorAll("input");
+    pilihanEls.forEach(input=>{
+      input.disabled = true;
+      const label = input.parentElement;
+      if(input.value === s.jawaban){
+        label.classList.add("correct");
+        label.innerHTML += " ✔";
+      }
+      if(jawabanUser[index] && jawabanUser[index] !== s.jawaban && input.checked){
+        label.classList.add("wrong");
+        label.innerHTML += " ✖";
+      }
+    });
+    if(jawabanUser[index] === s.jawaban) score++;
+  });
+  const nilai = Math.round((score/soalData.length)*100);
+  document.getElementById("result").textContent = `Nilai Anda: ${nilai}`;
+}
+</script>
+</body>
+</html>
